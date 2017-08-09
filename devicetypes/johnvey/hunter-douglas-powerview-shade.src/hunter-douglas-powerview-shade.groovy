@@ -143,7 +143,7 @@ private getDeviceId(pvId) {
  *              via ShadeMaxPosition map.
  */
 private setPosition(int level, int type) {
-    log.debug "setPosition level=$level type=$type"
+    // log.debug "setPosition level=$level type=$type"
 
     // translate to the hub-specific values
     def rawPosition = 0

@@ -76,7 +76,7 @@ private sendRequest(method, path, body=null) {
             callback: sendRequestCallback
         ]
     )
-    log.debug("sendRequest: ${method} ${host}${path}")
+    // log.debug("sendRequest: ${method} ${host}${path}")
     return hubAction
 }
 
