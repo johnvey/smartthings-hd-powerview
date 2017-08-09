@@ -105,6 +105,7 @@ def canInstall() {
     return state.hubIP ? true : false
 }
 
+// TODO: should this back off the refresh rate if we have an IP?
 def getPrefInterval() {
     return 5
     // state.hubIP ? 5 : 15
@@ -145,6 +146,10 @@ def getDeviceId(deviceType, pvId) {
     return "$deviceType;${state.hubMAC};${pvId}"
 }
 
+/**
+ * Extracts the device type from the child device DNI, as defined above in
+ * getDeviceId().
+ */
 def parseDeviceType(deviceNetworkId) {
     return deviceNetworkId.tokenize(';')[0]
 }
