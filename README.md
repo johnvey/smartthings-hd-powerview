@@ -32,7 +32,7 @@ The scene control panel. This is implemented as a momentary switch and there is 
 ## Installation
 This requires you to log in to the SmartThings web-based IDE to add a custom SmartApp and two custom device handlers.
 
-1. Register the following custom components (see tutorial for SmartApps and [device handlers](https://www.thesmartesthouse.com/blogs/the-smartest-blog/how-to-install-a-custom-device-handler-in-smartthings)):
+1. Register the following custom components (see [tutorial for SmartApps](https://community.smartthings.com/t/faq-an-overview-of-using-custom-code-in-smartthings/16772) and [device handlers](https://www.thesmartesthouse.com/blogs/the-smartest-blog/how-to-install-a-custom-device-handler-in-smartthings)):
    1. Install the `Hunter Douglas PowerView` SmartApp from this repo: owner=`johnvey`, name=`smartthings-hd-powerview`, branch=`master`
    1. Install the `Hunter Douglas PowerView Shade` device handler from this repo
    1. Install the `Hunter Douglas PowerView Scene` device handler from this repo
