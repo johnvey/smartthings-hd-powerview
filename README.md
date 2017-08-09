@@ -21,11 +21,11 @@ This project currently does *not* support:
 This is primarily for [Hunter Douglas Silhouette shades](https://www.hunterdouglas.com/silhouette) so there is both the vane and shade control. Other shades will likely work, though there will be extraneous functionality that may throw errors. Relying on scenes is likely the easiest way forward in this case.
 
 ## Screenshots
-Controlling a shade
+The shade control panel. Note that the primary action (top circle) is for toggling the vanes on and off. The brightness control is for the shade. The device handler should refresh its state every minute in the background. The "refresh" tile is there if you need to know the state immediately.
 
 ![screen1](./assets/screen-08.png) 
 
-Controlling a scene
+The scene control panel. This is implemented as a momentary switch and there is no state tracking info, i.e., the "Recently" tab will always be empty.
 
 ![screen1](./assets/screen-09.png)
 
