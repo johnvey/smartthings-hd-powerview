@@ -9,7 +9,7 @@ This project implements a SmartApp and device handlers to allow you to directly 
 * set/monitor the vanes level
 * execute scenes
 
-The benefit of using this is that there is no requirement for the default Powerview Connect web service or other middlemen like IFTTT--your SmartThings hub will communicate directly with the PowerView hub. **Note:** due to the way SmartThings works, a connection to the ST cloud is still required.
+The benefit of using this is that there is no requirement for the default PowerView Account web service or other middlemen like IFTTT--your SmartThings hub will communicate directly with the PowerView hub. **Note:** due to the way SmartThings works, a connection to the ST cloud is still required.
 
 This project currently does *not* support:
 * reading/editing rooms
@@ -30,7 +30,7 @@ The scene control panel. This is implemented as a momentary switch and there is 
 ![screen1](./assets/screen-09.png)
 
 ## Installation
-This requires you to log in to the SmartThings web-based IDE to add a custom SmartApp and two custom device handlers.
+This requires you to log in to the [SmartThings web-based IDE](https://graph.api.smartthings.com) to add a custom SmartApp and two custom device handlers.
 
 1. Register the following custom components (see [tutorial for SmartApps](https://community.smartthings.com/t/faq-an-overview-of-using-custom-code-in-smartthings/16772) and [device handlers](https://www.thesmartesthouse.com/blogs/the-smartest-blog/how-to-install-a-custom-device-handler-in-smartthings)):
    1. Install the `Hunter Douglas PowerView` SmartApp from this repo: owner=`johnvey`, name=`smartthings-hd-powerview`, branch=`master`
