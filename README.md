@@ -66,14 +66,47 @@ The structure of this SmartThings handler is:
 
 ## SmartThings Programming Errata
 
-Programming these handlers was markedly cumbersome due to the poor quality of the documentation. Triggering the HTTP request was suprisingly the most opaque, and the community boards were rife with contradicting information and cargo culting. I've compiled what I think are the correct variants on making local LAN HTTP requests:
+Programming these handlers was markedly cumbersome due to the poor quality of the documentation. Here are some tips that I wish I knew before I had started:
 
-[Making local LAN HTTP requests from SmartThings hub](https://github.com/johnvey/smartthings-dev-lan-http)
+### **Tip 1:** There are several incantations to have your ST hub communicate directly with a device on your LAN.
 
-### **Tip 1:** If you are connecting your GitHub project directly to the ST IDE, make sure your source code file name matches the `name` field in the metadata declaration exactly.
+This is the most reliable method that I had found:
+1. instantiate your own `HubAction()` instance
+1. use the `HubAction(map requestConfig, string deviceID, map options)` signature
+1. provide an explicit callback function if you need to parse the response
+1. use a unique identifier for the device ID, *not* some kind of hash of the MAC address (the official docs cover this multiple times but the forums are rife with misinformation)
+
+```
+sendRequest(method, path, body=null, callbackFn=null) {
+    def host = '192.168.1.123:4567'
+    def contentType = 'application/json'
+    def deviceId = '18d11666-14de-4a46-9492-86a147ef0e3b'
+    def hubAction = new physicalgraph.device.HubAction(
+        [
+            method: method,
+            path: path,
+            HOST: host,
+            headers: [
+                'HOST': host, // yes, it is required here and above
+                'Content-Type': contentType
+            ],
+            body: body
+        ],
+        deviceId,
+        [
+            callback: callbackFn
+        ]
+    )
+    log.debug("sendRequest: ${method} ${host}${path}")
+    return hubAction
+}
+```
+Note that this implementation generally requires that you invoke this from a device event, i.e., if the ST framework was the caller that initiated this invocation somewhere up in your call tree. If you decide to invoke this via a timer, e.g. `runEvery1Minute()`, then you *must* invoke via the `sendHubCommand()` method. See [example](https://github.com/johnvey/smartthings-hd-powerview/blob/master/devicetypes/johnvey/hunter-douglas-powerview-shade.src/hunter-douglas-powerview-shade.groovy#L309).
+
+### **Tip 2:** If you are connecting your GitHub project directly to the ST IDE, make sure your source code file name matches the `name` field in the metadata declaration exactly.
 If you fail to do this, attempting to use the "Update from repo" functionality will fail with no further explanation. [Official doc mention](http://docs.smartthings.com/en/latest/tools-and-ide/github-integration.html#step-5-configure-git-to-sync-fork-with-smartthings).
 
-### **Tip 2:** Direct embed of a `dynamicPage()` inside of the top-level `preferences()` block for a SmartApp doesn't work.
+### **Tip 3:** Direct embed of a `dynamicPage()` inside of the top-level `preferences()` block for a SmartApp doesn't work.
 Instead of something like
 ```
 preferences {
@@ -90,5 +123,5 @@ def singlePagePref() {
 }
 ```
 
-### **Tip 3:** You can use many of the other Groovy language features.
+### **Tip 4:** You can use many of the other Groovy language features.
 You can use `import` to bring in other functionality that makes programming in ST more palatable. For example, I wanted to declare a top-scope "enum", but ran into the sandboxing that ST uses via a [class wrapper around your SmartApp](http://docs.smartthings.com/en/latest/getting-started/groovy-for-smartthings.html#how-it-works). The solution to this was to [use the `@Field` decorator](https://stackoverflow.com/questions/6305910/how-do-i-create-and-access-the-global-variables-in-groovy) to effectively hoist my `def`s out of the default scope.

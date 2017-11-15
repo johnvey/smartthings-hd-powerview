@@ -3,6 +3,7 @@
 This API information was gathered from a PowerView hub (revision=1, subRevision=1, build=837).
 
 ## API notes
+* The hub exposes an unprotected HTTP server so there is no authentication. As such, it should never be exposed to the internet.
 * Almost all user-configurable "name" fields are Base64 encoded. Use whatever standard library call is in your language to decode this.
 
 ## Hub Info
