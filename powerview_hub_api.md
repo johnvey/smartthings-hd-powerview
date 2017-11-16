@@ -1,6 +1,6 @@
 # PowerView Hub REST API
 
-This API information was gathered from a PowerView hub (revision=1, subRevision=1, build=837).
+This API information was gathered from a PowerView hub (revision=1, subRevision=1, build=837 and 855).
 
 ## API notes
 * The hub exposes an unprotected HTTP server so there is no authentication. As such, it should never be exposed to the internet.
@@ -131,6 +131,58 @@ Data (60 bytes)
     Data: 01697373756520626561636f6e0000000000000000000000...
     [Length: 60]
 ```
+
+### Shade discovery ###
+The hub can discover new shades that are within RF range. The sequence appears to be:
+
+Client requests that the hub enter discovery mode:
+```
+GET /api/rfnetwork/discovershades
+```
+```
+{}
+```
+
+The client then polls the hub for its discovery status:
+```
+GET /api/rfnetwork/
+```
+```
+{
+    "rfNetwork": {
+        "serialNumber":"8886023B22C4276A",
+        "rfID":"0x87D1",
+        "rfIDInt":34769,
+        "rfStatus":1, // NOTE that this is active
+        "shadeIds":[],
+        "discoveryActive":true // NOTE that this is true
+    }
+}
+```
+
+The above GET request is repeated until the response payload changes as follows:
+```
+{
+    "rfNetwork": {
+        "serialNumber":"8886023B22C4276A",
+        "rfID":"0x87D1",
+        "rfIDInt":34769,
+        "rfStatus":0, // NOTE that this is inactive
+        "shadeIds":[],
+        "discoveryActive":false // NOTE that this is false
+    }
+}
+```
+
+At this point the client will ask the user to stop the discovery process and issue the following:
+```
+GET /api/rfnetwork/stopdiscovershades
+```
+```
+{}
+```
+
+
 ## Shades
 
 ### API notes
@@ -237,6 +289,9 @@ GET /api/shades/<SHADE_ID>
 ```
 Querystring args:
 * `refresh=true` - forces hub to poll shade for latest info
+* `updateBatteryLevel=true` - forces refresh of battery level information
+
+It is unclear whether these args can be combined in one request. It is also unclear whether `refresh` and `updateBatteryLevel` are effectively the same thing or not.
 
 Sample response, status=200
 ```
@@ -286,6 +341,28 @@ Sample response, status=200
     }
 }
 ```
+
+
+### Jog single shade
+Instructs the shade to partially open and close in order to physically identify the shade under control
+```
+PUT /api/shades/<SHADE_ID>
+
+// PUT body is raw JSON
+{"shade":{"motion":"jog"}}
+```
+Response payload is same as above
+
+
+### Calibrate single shade
+Recalibrates the stop limits of the shade by fully opening and then closing the shade to establish its physical bounds
+```
+PUT /api/shades/<SHADE_ID>
+
+// PUT body is raw JSON
+{"shade":{"motion":"calibrate"}}
+```
+Response payload is same as above
 
 
 ## Scenes
