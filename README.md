@@ -7,6 +7,7 @@ This project implements a SmartApp and device handlers to allow you to directly 
 * auto-discover configured scenes
 * set/monitor the shade level
 * set/monitor the vanes level
+* monitor battery level
 * execute scenes
 
 The benefit of using this is that there is no requirement for the default PowerView Account web service or other middlemen like IFTTT--your SmartThings hub will communicate directly with the PowerView hub. **Note:** due to the way SmartThings works, a connection to the ST cloud is still required.

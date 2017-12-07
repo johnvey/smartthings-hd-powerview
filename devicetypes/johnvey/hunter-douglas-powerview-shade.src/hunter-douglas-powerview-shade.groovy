@@ -36,6 +36,7 @@ metadata {
         capability "Sensor"
 
         // device capabilities
+        capability "Battery"
         capability "Light"
         capability "Polling"
         capability "Refresh"
@@ -99,6 +100,13 @@ metadata {
                     inactiveLabel: false, decoration: "flat") {
             state("default", label:'Close vanes', action:"close",
                 icon:"st.doors.garage.garage-closing")
+        }
+        // battery level
+        valueTile("battery", "device.battery", width: 2, height: 2, decoration: "flat") {
+            state("battery", label:'${currentValue}%\nBattery', defaultState: true, backgroundColors: [
+                [value: 0, color: "#C70039"],
+                [value: 20, color: "#FFFFFF"]
+            ])
         }
 
         main(["windowShade"])
@@ -171,6 +179,14 @@ private setPosition(int level, int type) {
 }
 
 /**
+ * Fetches current shade information
+ */
+private forceUpdate() {
+    def path = "/api/shades/${state.pvShadeId}?updateBatteryLevel=true"
+    return sendRequest('GET', path, '')
+}
+
+/**
  * Returns a HTTP hubAction to be sent from the ST hub to the local PowerView
  * hub. The returned hubAction object must be handled either by the command
  * framework or an explicit sendHubCommand() call.
@@ -239,6 +255,7 @@ def sendRequestCallback(response) {
 def parseShadeData(payload) {
     def shade = payload.shade
 
+    // parse shade position info
     if (shade.positions.posKind1 == ShadeComponentType.SHADE) {
         def shadeLevel = (int) shade.positions.position1 / ShadeMaxPosition.SHADE * 100
         log.debug("Setting shade level: ${shadeLevel}")
@@ -261,6 +278,14 @@ def parseShadeData(payload) {
         // if vane level is reported, then shade is closed
         sendEvent(name: 'level', value: 0)
     }
+
+    // parse shade battery level info
+    if (shade.batteryStrength) {
+        // TODO: the 255 max value is a guess; I have not verified this
+        def batteryPerc = Math.round(shade.batteryStrength/255 * 100)
+        log.debug("Setting shade battery level: ${batteryPerc}")
+        sendEvent(name: 'battery', value: batteryPerc)
+    }
 }
 
 
@@ -276,13 +301,13 @@ def parse(String description) {
 def installed() {
     log.info('called shade installed()')
     setHubInfo()
-    runEvery1Minute(refresh)
+    runEvery3Hours(refresh)
 }
 
 def updated() {
     log.info('called shade updated()')
     setHubInfo()
-    runEvery1Minute(refresh)
+    runEvery3Hours(refresh)
 }
 
 def setHubInfo() {
@@ -306,7 +331,7 @@ def refresh() {
     // this is wrapped in the sendHubCommand() because scheduled calls that
     // are invoked via the runEvery*() methods don't care about hub actions
     // see: https://community.smartthings.com/t/using-physicalgraph-device-hubaction/77495/5
-    return sendHubCommand(sendRequest("GET", "/api/shades/${state.pvShadeId}"))
+    return sendHubCommand(forceUpdate())
 }
 
 //
