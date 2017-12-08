@@ -43,6 +43,10 @@ metadata {
         capability "Switch"
         capability "Switch Level"
         capability "Window Shade"
+
+        // custom commands
+        command "jog"
+
     }
 
     simulator {
@@ -88,7 +92,7 @@ metadata {
                 icon:"st.secondary.refresh-icon")
         }
 
-        //-- bottom row --
+        //-- middle row --
         // close shade
         standardTile("close", "device.switch", width: 2, height: 2,
                     inactiveLabel: false, decoration: "flat") {
@@ -107,6 +111,14 @@ metadata {
                 [value: 0, color: "#C70039"],
                 [value: 20, color: "#FFFFFF"]
             ])
+        }
+
+        //-- bottom row --
+        // jog shade
+        standardTile("jog", "device.windowShade", width: 2, height: 2,
+                    inactiveLabel: false, decoration: "flat") {
+            state("default", label:'Jog shade', action:"jog",
+                icon:"st.motion.motion.inactive")
         }
 
         main(["windowShade"])
@@ -184,6 +196,21 @@ private setPosition(int level, int type) {
 private forceUpdate() {
     def path = "/api/shades/${state.pvShadeId}?updateBatteryLevel=true"
     return sendRequest('GET', path, '')
+}
+
+/**
+ * Instructs the shade to briefly open and close in order to visually identify
+ * the shade under control.
+ {"shade":{"motion":"jog"}}
+ */
+private startJog() {
+    def path = "/api/shades/${state.pvShadeId}"
+    def builder = new groovy.json.JsonBuilder()
+    builder.shade {
+        motion "jog"
+    }
+    def body = builder.toString()
+    return sendRequest('PUT', path, body)
 }
 
 /**
@@ -283,7 +310,7 @@ def parseShadeData(payload) {
     if (shade.batteryStrength) {
         // TODO: the 255 max value is a guess; I have not verified this
         def batteryPerc = Math.round(shade.batteryStrength/255 * 100)
-        log.debug("Setting shade battery level: ${batteryPerc}")
+        //log.debug("Setting shade battery level: ${batteryPerc}")
         sendEvent(name: 'battery', value: batteryPerc)
     }
 }
@@ -393,4 +420,9 @@ def close() {
 def presetPosition() {
     log.debug "Executing 'presetPosition'"
     return setPosition(50, ShadeComponentType.VANE)
+}
+
+def jog() {
+    log.debug "Executing jog()"
+    return startJog()
 }
