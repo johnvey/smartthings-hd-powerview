@@ -289,9 +289,9 @@ GET /api/shades/<SHADE_ID>
 ```
 Querystring args:
 * `refresh=true` - forces hub to poll shade for latest info
-* `updateBatteryLevel=true` - forces refresh of battery level information
+* `updateBatteryLevel=true` - forces refresh of battery level information. NOTE: this will also cause the shade to jog once
 
-It is unclear whether these args can be combined in one request. It is also unclear whether `refresh` and `updateBatteryLevel` are effectively the same thing or not.
+These two params do not like to be combined.
 
 Sample response, status=200
 ```

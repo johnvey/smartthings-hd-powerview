@@ -192,9 +192,17 @@ private setPosition(int level, int type) {
 
 /**
  * Fetches current shade information
+ * @param requestBatteryLevel Indicates if the hub should force request an
+ *        update on the battery level. This request will cause the shade
+ *        to jog once.
  */
-private forceUpdate() {
-    def path = "/api/shades/${state.pvShadeId}?updateBatteryLevel=true"
+private forceUpdate(boolean requestBatteryLevel = false) {
+    def path = "/api/shades/${state.pvShadeId}"
+    if (requestBatteryLevel) {
+        path += '?updateBatteryLevel=true'
+    } else {
+        path += '?refresh=true'
+    }
     return sendRequest('GET', path, '')
 }
 
