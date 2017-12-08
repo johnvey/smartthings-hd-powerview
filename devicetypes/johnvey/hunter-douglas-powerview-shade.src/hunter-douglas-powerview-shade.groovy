@@ -287,8 +287,13 @@ def parseShadeData(payload) {
         def shadeLevel = (int) shade.positions.position1 / ShadeMaxPosition.SHADE * 100
         log.debug("Setting shade level: ${shadeLevel}")
         sendEvent(name: 'level', value: shadeLevel)
+        if (shadeLevel > 0) {
+            sendEvent(name: 'switch', value: 'on')
+        } else {
+            sendEvent(name: 'switch', value: 'off')            
+        }
         // if shade level is reported, then vane is closed
-        sendEvent(name: 'windowShade', value: 'closed') 
+        sendEvent(name: 'windowShade', value: 'closed')
 
     } else if (shade.positions.posKind1 == ShadeComponentType.VANE) {
         def vaneLevel = (int) shade.positions.position1 / ShadeMaxPosition.VANE * 100
@@ -302,6 +307,7 @@ def parseShadeData(payload) {
             stateName = 'closed'
         }
         sendEvent(name: 'windowShade', value: stateName)
+        sendEvent(name: 'switch', value: 'off')
         // if vane level is reported, then shade is closed
         sendEvent(name: 'level', value: 0)
     }
