@@ -58,7 +58,7 @@ This requires you to log in to the [SmartThings web-based IDE](https://graph.api
 
 The PowerView hub is a very simple HTTP server. I've documented the API that I've been able to sniff from a hub at `Rev. 1, SubRev. 1, Build 847`:
 
-[PowerView hub API](https://github.com/johnvey/smartthings-hd-powerview/blob/master/powerview_hub_api.md)
+[Hunter Douglas PowerView HTTP API](https://github.com/johnvey/smartthings-hd-powerview/blob/master/hunter_douglas_powerview_api.md)
 
 The structure of this SmartThings handler is:
 * 1 SmartApp that handles the initial setup and discovery of the connected shades and configured scenes

@@ -1,6 +1,6 @@
-# PowerView Hub REST API
+# Hunter Douglas PowerView Hub REST API (Gen 1)
 
-This API information was gathered from a PowerView hub (revision=1, subRevision=1, build=837 and 855).
+This API information was gathered from a PowerView hub (revision=1, subRevision=1, build=837 and 855). Gen 2 hubs seem to be incompatible with gen 1 API. I do not have a gen 2 hub to inspect so any help would be appreciated.
 
 ## API notes
 * The hub exposes an unprotected HTTP server so there is no authentication. As such, it should never be exposed to the internet.
