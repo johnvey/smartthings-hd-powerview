@@ -65,6 +65,10 @@ The structure of this SmartThings handler is:
 * 1 device handler instance for each shade
 * 1 device handler instance for each scene
 
+### Gen 2 hub compatibility
+
+Some updates have been made that makes portions of this work with a gen 2 hub. Further investigations are still required to confirm full compatibility. See the Github issue for details.
+
 ## SmartThings Programming Errata
 
 Programming these handlers was markedly cumbersome due to the poor quality of the documentation. Here are some tips that I wish I knew before I had started:

@@ -100,7 +100,7 @@ def singlePagePref() {
                 }
             }
 
-            section("SceneCollections") {
+            section("Scene Collections") {
                 if (sceneCollectionCount > 0) {
                     input(
                         name: "selectedSceneCollections", 
