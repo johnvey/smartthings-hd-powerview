@@ -1,5 +1,5 @@
 /**
- * Hunter Douglas PowerView Scene (device handler)
+ * Hunter Douglas PowerView Scene Collection (device handler)
  * Copyright (c) 2017 Johnvey Hwang
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
 
 metadata {
     definition (
-        name: "Hunter Douglas PowerView Scene", 
+        name: "Hunter Douglas PowerView Scene Collection", 
         namespace: "johnvey", 
         author: "Johnvey Hwang"
     ) {
@@ -55,7 +55,7 @@ metadata {
  * the `getDeviceId()` method in powerview-manager.groovy
  */
 private getDeviceId(pvId) {
-    return "scene;${state.hubMAC};${pvId}"
+    return "scenecollection;${state.hubMAC};${pvId}"
 }
 
 private sendRequest(method, path, body=null) {
@@ -95,8 +95,8 @@ def setHubInfo() {
     state.hubMAC = parent.state.hubMAC
     state.hubIP = parent.state.hubIP
     state.hubPort = parent.state.hubPort
-    state.pvSceneId = device.name
-    log.debug("called setHubInfo() - hubMAC=${state.hubMAC} hubIP=${state.hubIP} hubPort=${state.hubPort} pvSceneId=${state.pvSceneId}")
+    state.pvSceneCollectionId = device.name
+    log.debug("called setHubInfo() - hubMAC=${state.hubMAC} hubIP=${state.hubIP} hubPort=${state.hubPort} pvSceneId=${state.pvSceneCollectionId}")
 }
 
 // parse hub response into attributes
@@ -117,7 +117,7 @@ def updated() {
 // implement the momentary method
 def push() {
     log.debug("CMD push()")
-    sendRequest("GET", "/api/scenes?sceneId=${state.pvSceneId}")
+    sendRequest("GET", "/api/scenecollections?sceneCollectionId=${state.pvSceneCollectionId}")
 }
 
 def on() {
