@@ -320,7 +320,7 @@ Updates the settings for a single shade
 PUT /api/shades/<SHADE_ID>
 
 // PUT body is raw JSON
-{"shade":{"id":<SHADE_ID>,"positions":{"position1":32767,"posKind1":3`}
+{"shade":{"id":<SHADE_ID>,"positions":{"position1":32767,"posKind1":3}}}
 ```
 Sample response, status=200
 ```
