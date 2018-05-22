@@ -61,11 +61,14 @@ def singlePagePref() {
             fetchHubInfo()
             fetchAllShades()
             fetchAllScenes()
+            fetchAllSceneCollections()
             def foundShades = getDiscoveredShadeList()
             def foundScenes = getDiscoveredSceneList()
+            def foundSceneCollections = getDiscoveredSceneCollectionList()
             def shadeCount = foundShades.size()
             def sceneCount = foundScenes.size()
-            log.info("pref.singlePagePref - shadeCount=$shadeCount, sceneCount=$sceneCount")
+            def sceneCollectionCount = foundSceneCollections.size()
+            log.info("pref.singlePagePref - shadeCount=$shadeCount, sceneCount=$sceneCount, sceneCollectionCount=$sceneCollectionCount")
 
             section("Shades") {
                 if (shadeCount > 0) {
@@ -96,7 +99,22 @@ def singlePagePref() {
                     paragraph "Searching for installed scenes..."
                 }
             }
-        }
+
+            section("Scene Collections") {
+                if (sceneCollectionCount > 0) {
+                    input(
+                        name: "selectedSceneCollections", 
+                        title: "Linked scene collections (${sceneCollectionCount} available)", 
+                        type: "enum", 
+                        options: foundSceneCollections,
+                        multiple: true, 
+                        required: false
+                    )
+                } else {
+                    paragraph "Searching for installed scene collections..."
+                }
+            }
+		}
     }
 }
 
@@ -137,6 +155,7 @@ def getDeviceId(deviceType, pvId) {
     switch (deviceType) {
         case 'shade':
         case 'scene':
+        case 'scenecollection':
             // valid
             break
         default:
@@ -206,9 +225,16 @@ def _fetchAllShadesCallback(response) {
         def shadeConfig = it.clone()
 
         // add our custom keys
-        def shadeLabel = new String(it.name.decodeBase64())
+        def shadeLabel
+        try {
+          shadeLabel = new String(it.name.decodeBase64())
+        } catch (e) {
+          log.error "Error decoding shade ${it.id} with name ${it.name}"
+          log.error e
+          shadeLabel = "${it.id} ${it.name}"
+        }
         def enumLabel = "${shadeLabel} (${it.id})"
-        shadeConfig.label = shadeLabel // plain english name
+        shadeConfig.label = "Blind ${shadeLabel}" // plain english name
         shadeConfig.enumLabel = enumLabel // awkward label for use with prefs
         shadeConfig.deviceNetworkId = getDeviceId('shade', it.id)
 
@@ -254,9 +280,17 @@ def _fetchAllScenesCallback(response) {
         def sceneConfig = it.clone()
 
         // add our custom keys
-        def sceneLabel = new String(it.name.decodeBase64())
+        def sceneLabel
+        try {
+          sceneLabel = new String(it.name.decodeBase64())
+        } catch (e) {
+          log.error "Error decoding scene ${it.id} with name ${it.name}"
+          log.error e
+          sceneLabel = "${it.id} ${it.name}"
+        }
+
         def enumLabel = "${sceneLabel} (${it.id})"
-        sceneConfig.label = sceneLabel // plain english name
+        sceneConfig.label = "Blinds ${sceneLabel}" // plain english name
         sceneConfig.enumLabel = enumLabel // awkward label for use with prefs
         sceneConfig.deviceNetworkId = getDeviceId('scene', it.id)
 
@@ -284,6 +318,61 @@ def sceneEnumToId(enumLabel) {
     return state.discoveredScenes[enumLabel]?.deviceNetworkId
 }
 
+/**
+ * Fetches all managed scene configs
+ */
+def fetchAllSceneCollections() {
+    return sendRequest('GET', '/api/scenecollections', null, _fetchAllSceneCollectionsCallback)
+}
+
+/**
+ * Handles response for scene configs
+ */
+def _fetchAllSceneCollectionsCallback(response) {
+    state.discoveredSceneCollections = [:]
+
+    response.json.sceneCollectionData?.each {
+        // start with the config info from PV
+        def sceneCollectionConfig = it.clone()
+
+        // add our custom keys
+        def sceneCollectionLabel
+        try {
+          sceneCollectionLabel = new String(it.name.decodeBase64())
+        } catch (e) {
+          log.error "Error decoding scene collection ${it.id} with name ${it.name}"
+          log.error e
+          sceneCollectionLabel = "${it.id} ${it.name}"
+        }
+
+        def enumLabel = "${sceneCollectionLabel} (${it.id})"
+        sceneCollectionConfig.label = "Blinds ${sceneCollectionLabel}" // plain english name
+        sceneCollectionConfig.enumLabel = enumLabel // awkward label for use with prefs
+        sceneCollectionConfig.deviceNetworkId = getDeviceId('scenecollection', it.id)
+
+        state.discoveredSceneCollections[enumLabel] = sceneCollectionConfig
+    }
+	log.info "_fetchAllSceneCollectionsCallback(status=${response.status}) scenes=${state.discoveredSceneCollections.keySet()}"
+    return state.discoveredSceneCollections
+}
+
+/**
+ * Returns a flat list of scene names that can be rendered by a list control
+ */
+def getDiscoveredSceneCollectionList() {
+    def ret = []
+    state.discoveredSceneCollections?.each { key, value ->
+        ret.add(value.enumLabel)
+    }
+    return ret
+}
+
+/**
+ * Returns the device ID associated with an enumLabel
+ */
+def sceneCollectionEnumToId(enumLabel) {
+    return state.discoveredSceneCollections[enumLabel]?.deviceNetworkId
+}
 
 // ----------------------------------------------------------------------------
 // device handler methods
@@ -420,6 +509,76 @@ def removeAddedScenes() {
     state.addedSceneIds = []
 }
 
+/**
+ * Install the scene collections that the user selected in the config
+ */
+def installSelectedSceneCollections() {
+    log.info("installSelectedSceneCollections() selectedSceneCollections=${settings.selectedSceneCollections}")
+
+    // remove the scene collections that are installed but are not checked by the user
+    def toRemove = getDiscoveredSceneCollectionList() - settings.selectedSceneCollections
+    toRemove?.each {
+        def deviceId = sceneCollectionEnumToId(it)
+        log.info("Remove scene collection deviceId=$deviceId")
+        try {
+            deleteChildDevice(deviceId)
+        } catch (e) {
+            log.warn(e)
+        }
+    }
+
+    // iterate over the enum label
+    settings.selectedSceneCollections?.each {
+        installSceneCollection(it)
+    }
+}
+
+/**
+ * Installs an individual scene collection device handler
+ */
+def installSceneCollection(enumLabel) {
+    // get scene info already fetched
+    def sceneCollectionInfo = state.discoveredSceneCollections.get(enumLabel)
+    if (!sceneCollectionInfo) {
+        log.error("installSceneCollection failed; did not find $enumLabel in state.discoveredSceneCollections")
+        return
+    }
+
+    // check if device is already installed
+    def currentChildDevices = getChildDevices()
+    log.debug("current child devices: ${currentChildDevices}")
+    def selectedDevice = currentChildDevices.find { sceneCollectionInfo.deviceNetworkId }
+    def dev
+    if (selectedDevice) {
+        dev = getChildDevices()?.find {
+            it.deviceNetworkId == sceneCollectionInfo.deviceNetworkId
+        }
+    }
+
+    if (!dev) {
+        def addedDevice = addChildDevice(
+            "johnvey", 
+            "Hunter Douglas PowerView Scene Collection", 
+            sceneCollectionInfo.deviceNetworkId,
+            getHubID(),
+            [name: sceneCollectionInfo.id, label: sceneCollectionInfo.label, completedSetup: true]
+        )
+        // log the ID to the app for later use
+        state.addedSceneCollectionIds = state.addedSceneCollectionIds ?: []
+        state.addedSceneCollectionIds.add(sceneCollectionInfo.deviceNetworkId)
+        log.info "ADDED: label=${sceneCollectionInfo.label} deviceId=${sceneCollectionInfo.deviceNetworkId}"
+    } else {
+        log.debug("SKIP: deviceId=${sceneCollectionInfo.deviceNetworkId}")
+    }
+}
+
+def removeAddedSceneCollections() {
+    state.addedSceneCollectionIds?.each {
+        log.info("Remove scene collection deviceId=$it")
+        deleteChildDevice(it)
+    }
+    state.addedSceneCollectionIds = []
+}
 
 // ----------------------------------------------------------------------------
 // HTTP methods
@@ -468,6 +627,7 @@ def updated() {
     log.info "CMD updated"
     installSelectedShades()
     installSelectedScenes()
+    installSelectedSceneCollections()
 }
 
 /**

@@ -482,6 +482,61 @@ Unknown scene, status=404
     }
 }
 ```
+## Scene Collections
+
+### All scene collections
+```
+GET /api/scenecollections
+```
+Sample response, status=200
+```
+{
+    "sceneCollectionIds": [
+        27745
+    ],
+    "sceneCollectionData": [
+        {
+            "id": 27745,
+            "name": "TXVsdGk=",
+            "order": 0,
+            "colorId": 0,
+            "iconId": 0
+        }
+    ]
+}
+```
+
+### Single scene collection
+```
+GET /api/scenecollections/<SCENE_COLLECTION_ID>
+```
+* `SCENE_COLLECTION_ID`: numeric ID of the scene collection to view
+
+Sample response, status=200
+```
+{
+    "sceneCollection": {
+        "id": 27745,
+        "name": "TXVsdGk=",
+        "order": 0,
+        "colorId": 0,
+        "iconId": 0
+    },
+    "sceneCollectionData": []
+}
+```
+
+### Activate a scene collection
+```
+GET /api/scenecollections?sceneCollectionId=<SCENE_COLLECTION_ID>
+```
+* `SCENE_COLLECTION_ID`: numeric ID of the scene collection to activate
+
+Sample response, status=200
+```
+// Example: GET /api/scenecollections?sceneCollectionId=27745
+{}
+```
 
 ## Rooms
 
@@ -527,16 +582,6 @@ Sample response, status=200
 
 ## Other
 These are other endpoints that I did not use
-```
-GET /api/scenecollections
-```
-Sample response, status=200
-```
-{
-    "sceneCollectionIds": [],
-    "sceneCollectionData": []
-}
-```
 
 ```
 GET /api/scheduledevents
