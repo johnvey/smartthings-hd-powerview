@@ -355,7 +355,12 @@ def setHubInfo() {
     state.hubMAC = parent.state.hubMAC
     state.hubIP = parent.state.hubIP
     state.hubPort = parent.state.hubPort
-    state.pvShadeId = device.name
+    try {
+        state.pvShadeId = device.name?.toInteger()
+    } catch(Exception ex) {
+        log.warn("could not cast shade ID to integer")
+        state.pvShadeId = device.name
+    }
     log.debug("called setHubInfo() - hubMAC=${state.hubMAC} hubIP=${state.hubIP} hubPort=${state.hubPort} pvShadeId=${state.pvShadeId}")
 }
 
