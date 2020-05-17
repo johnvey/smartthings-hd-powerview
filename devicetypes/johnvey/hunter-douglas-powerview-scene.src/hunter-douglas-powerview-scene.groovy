@@ -84,6 +84,8 @@ def sendRequestCallback(response) {
     if (response.status != 200) {
         log.warn("got unexpected response: status=${response.status} body=${response.body}")
     }
+    // scenes can only be momentary actuator, so always reset ST state to off
+    sendEvent(name: 'switch', value: 'off')
 }
 
 
